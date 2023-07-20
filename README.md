@@ -3,7 +3,10 @@
 Check size of added object in s3 bucket.
 
 # Installation
+
+```
 pip install boto3 -t lambda_function/
+```
 
 ## Usage
 
