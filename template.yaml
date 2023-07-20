@@ -11,7 +11,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - S3ReadPolicy:
-            BucketName: "csv-logger-test-storage"
+            BucketName: "size-checker-storage"
       Events:
         S3Event:
           Type: S3
@@ -30,13 +30,13 @@ Resources:
       SourceArn: !Join 
                   - ""
                   - - "arn:aws:s3:::"
-                    - "csv-logger-test-storage"
+                    - "size-checker-storage"
 
   S3Bucket:
     Type: AWS::S3::Bucket
     DependsOn: "TriggerLambdaPermission"
     Properties:
-      BucketName: csv-logger-test-storage
+      BucketName: size-checker-storage
       NotificationConfiguration:
           LambdaConfigurations: 
             - Event: "s3:ObjectCreated:*"
