@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Lambda function that gets triggered when a CSV file is uploaded to S3 and logs the number of lines.
+
+Resources:
+  CsvLoggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_function/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - S3ReadPolicy:
+            BucketName: "csv-logger-test-storage"
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref S3Bucket
+            Events: s3:ObjectCreated:*
+  
+  TriggerLambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt 
+        - CsvLoggerFunction
+        - Arn
+      Principal: "s3.amazonaws.com"
+      SourceArn: !Join 
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - "csv-logger-test-storage"
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: "TriggerLambdaPermission"
+    Properties:
+      BucketName: csv-logger-test-storage
+      NotificationConfiguration:
+          LambdaConfigurations: 
+            - Event: "s3:ObjectCreated:*"
+              Function: !GetAtt
+              - CsvLoggerFunction
+              - Arn
+
+Outputs:
+  CsvLoggerFunction:
+    Description: "CSV Logger Lambda Function ARN"
+    Value: !GetAtt CsvLoggerFunction.Arn
+  S3Bucket:
+    Description: "S3 Bucket where CSV files are uploaded"
+    Value: !Ref S3Bucket
